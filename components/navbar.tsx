@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Search, Menu, X } from 'lucide-react'
+import { Search, Menu, X, LogOut, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { NAV_MAIN_LINKS, NAV_MORE_LINKS } from '@/lib/mock-data'
 import { AuthModal } from '@/components/auth-modal'
+import { useAuth } from '@/contexts/auth-context'
 
 const navLinks = NAV_MAIN_LINKS
 const moreLinks = NAV_MORE_LINKS
@@ -18,9 +19,33 @@ function isLinkActive(pathname: string, href: string): boolean {
 
 export function Navbar() {
   const pathname = usePathname()
+  const { user, signOut } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
+
+  const avatarUrl = user?.email
+    ? `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user.email)}`
+    : null
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false)
+      }
+    }
+
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [userMenuOpen])
 
   const isMoreActive = moreLinks.some((link) => isLinkActive(pathname, link.href))
 
@@ -109,14 +134,50 @@ export function Navbar() {
               />
             </div>
 
-            <button
-              type="button"
-              onClick={() => setIsAuthModalOpen(true)}
-              className="shrink-0 whitespace-nowrap px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-sm font-bold text-white bg-[#E50914] hover:bg-[#E50914]/90 shadow-[0_0_14px_rgba(229,9,20,0.45)] transition-colors"
-            >
-              <span className="sm:hidden">Login</span>
-              <span className="hidden sm:inline">Login / Sign Up</span>
-            </button>
+            {user ? (
+              <div className="relative shrink-0" ref={userMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
+                >
+                  <img
+                    src={avatarUrl!}
+                    alt="User avatar"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full"
+                  />
+                  <span className="hidden md:block text-xs sm:text-sm font-medium text-foreground">
+                    {user.email}
+                  </span>
+                  <ChevronDown size={14} className="text-muted-foreground" />
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-lg shadow-lg py-2 z-50">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await signOut()
+                        setUserMenuOpen(false)
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
+                    >
+                      <LogOut size={16} />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="shrink-0 whitespace-nowrap px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-sm font-bold text-white bg-[#E50914] hover:bg-[#E50914]/90 shadow-[0_0_14px_rgba(229,9,20,0.45)] transition-colors"
+              >
+                <span className="sm:hidden">Login</span>
+                <span className="hidden sm:inline">Login / Sign Up</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -182,16 +243,41 @@ export function Navbar() {
                 </div>
               )}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileOpen(false)
-                  setIsAuthModalOpen(true)
-                }}
-                className="w-full mt-2 py-2.5 rounded-lg text-sm font-bold text-white bg-[#E50914] hover:bg-[#E50914]/90 shadow-[0_0_14px_rgba(229,9,20,0.45)] transition-colors"
-              >
-                Login / Sign Up
-              </button>
+              {user ? (
+                <div className="flex items-center gap-3 mt-2 pt-4 border-t border-border">
+                  <img
+                    src={avatarUrl!}
+                    alt="User avatar"
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {user.email}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await signOut()
+                        setMobileOpen(false)
+                      }}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    setIsAuthModalOpen(true)
+                  }}
+                  className="w-full mt-2 py-2.5 rounded-lg text-sm font-bold text-white bg-[#E50914] hover:bg-[#E50914]/90 shadow-[0_0_14px_rgba(229,9,20,0.45)] transition-colors"
+                >
+                  Login / Sign Up
+                </button>
+              )}
             </div>
           </div>
         )}

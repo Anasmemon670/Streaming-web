@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { X, Loader2, Check } from 'lucide-react'
+import { X, Loader2, Check, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { supabase } from '@/lib/supabase'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -37,6 +38,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState('')
 
   const requirements = useMemo(
     () => ({
@@ -54,6 +56,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setPassword('')
       setIsLoading(false)
       setIsSuccess(false)
+      setError('')
     }
   }, [isOpen])
 
@@ -72,18 +75,68 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   if (!isOpen) return null
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (isLoading || isSuccess) return
 
     setIsLoading(true)
-    window.setTimeout(() => {
-      setIsLoading(false)
+    setError('')
+
+    try {
+      // Try to sign in first
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInError) {
+        // If sign in fails, try to sign up
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+        })
+
+        if (signUpError) {
+          throw signUpError
+        }
+
+        // Check if user needs email confirmation
+        if (signUpData.user && !signUpData.session) {
+          setError('Please check your email to confirm your account')
+          setIsLoading(false)
+          return
+        }
+      }
+
       setIsSuccess(true)
-      window.setTimeout(() => {
+      setTimeout(() => {
         onClose()
       }, 800)
-    }, 1200)
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed')
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/api/auth/callback`,
+        },
+      })
+
+      if (error) {
+        throw error
+      }
+    } catch (err: any) {
+      setError(err.message || 'Google sign in failed')
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -126,11 +179,20 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
         <button
           type="button"
-          className="w-full flex items-center justify-center gap-2.5 py-2.5 sm:py-3 rounded-xl bg-white text-gray-900 text-sm font-semibold hover:bg-gray-100 transition-colors"
+          onClick={handleGoogleSignIn}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-2.5 py-2.5 sm:py-3 rounded-xl bg-white text-gray-900 text-sm font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <GoogleIcon />
           Continue with Google
         </button>
+
+        {error && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            <AlertCircle size={16} />
+            {error}
+          </div>
+        )}
 
         <div className="flex items-center gap-3 my-4 sm:my-5">
           <div className="flex-1 h-px bg-white/15" />
