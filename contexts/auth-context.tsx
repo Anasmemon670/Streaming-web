@@ -30,14 +30,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
 
-      // Sync user profile when they sign in or sign up
+      // Sync user profile when they sign in or sign up (non-blocking)
       if (session?.user && (_event === 'SIGNED_IN' || _event === 'USER_UPDATED')) {
-        await syncUserProfile(session.user)
+        syncUserProfile(session.user).catch((err) => {
+          console.error('Profile sync error:', err)
+        })
       }
     })
 
