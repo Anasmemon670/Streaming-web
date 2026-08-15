@@ -17,6 +17,16 @@ function isLinkActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
+function extractUsernameFromEmail(email: string): string {
+  // Remove everything after @ to get the local part
+  const localPart = email.split('@')[0]
+  // Split by dots and capitalize each part
+  return localPart
+    .split('.')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
 export function Navbar() {
   const pathname = usePathname()
   const { user, signOut } = useAuth()
@@ -147,7 +157,7 @@ export function Navbar() {
                     className="w-7 h-7 sm:w-8 sm:h-8 rounded-full"
                   />
                   <span className="hidden md:block text-xs sm:text-sm font-medium text-foreground">
-                    {user.email}
+                    {extractUsernameFromEmail(user.email)}
                   </span>
                   <ChevronDown size={14} className="text-muted-foreground" />
                 </button>
@@ -252,7 +262,7 @@ export function Navbar() {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
-                      {user.email}
+                      {extractUsernameFromEmail(user.email)}
                     </p>
                     <button
                       type="button"
