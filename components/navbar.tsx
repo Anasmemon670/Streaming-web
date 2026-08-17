@@ -78,7 +78,9 @@ export function Navbar() {
         className={cn(
           'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
           scrolled
-            ? 'bg-[#0a0a0f]/90 backdrop-blur-md border-b border-white/5 shadow-lg'
+            ? isCategoryPage
+              ? 'bg-[#180407]/85 backdrop-blur-md border-b border-red-900/30 shadow-lg'
+              : 'bg-[#0a0a0f]/90 backdrop-blur-md border-b border-white/5 shadow-lg'
             : 'bg-transparent border-b border-transparent',
         )}
       >
@@ -98,8 +100,8 @@ export function Navbar() {
                     'text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-200 shrink-0 select-none',
                     active
                       ? isCategoryPage
-                        ? 'bg-[#38060c]/80 border border-red-800/80 text-white shadow-[0_0_10px_rgba(200,10,30,0.3)]'
-                        : 'bg-[#22222a] border border-white/10 text-white shadow-sm'
+                        ? 'bg-[#38060c]/80 border border-red-800/80 text-white shadow-[0_0_12px_rgba(229,9,20,0.4)]'
+                        : 'bg-[#220508]/65 border border-red-800/80 text-white shadow-[0_0_8px_rgba(200,10,30,0.25)]'
                       : 'text-gray-300 hover:text-white hover:bg-white/10',
                   )}
                 >
@@ -120,8 +122,8 @@ export function Navbar() {
                   'text-sm font-medium px-3.5 py-1.5 rounded-full transition-all duration-200 flex items-center gap-1 shrink-0 select-none',
                   isMoreActive
                     ? isCategoryPage
-                      ? 'bg-[#38060c]/80 border border-red-800/80 text-white shadow-[0_0_10px_rgba(200,10,30,0.3)]'
-                      : 'bg-[#22222a] border border-white/10 text-white shadow-sm'
+                      ? 'bg-[#38060c]/80 border border-red-800/80 text-white shadow-[0_0_12px_rgba(229,9,20,0.4)]'
+                      : 'bg-[#220508]/65 border border-red-800/80 text-white shadow-[0_0_8px_rgba(200,10,30,0.25)]'
                     : 'text-gray-300 hover:text-white hover:bg-white/10',
                 )}
               >
