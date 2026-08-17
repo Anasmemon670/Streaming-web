@@ -9,25 +9,29 @@ const movies = getHomeMovies()
 
 export default function Page() {
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-[#0c0c11] text-foreground">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-12">
-        <HeroCarousel />
+      {/* Full-width edge-to-edge Hero Banner */}
+      <HeroCarousel />
 
-        <ContentRow title="Trending Now" movies={movies.slice(0, 6)} />
-        <ContentRow title="Top Rated" movies={movies.slice(6, 12)} />
-        <ContentRow
-          title="New Releases"
-          movies={movies.map((m) => ({ ...m, id: m.id + 100 }))}
-        />
-        <ContentRow
-          title="Recommended For You"
-          movies={movies.map((m) => ({ ...m, id: m.id + 200 }))}
-        />
-
-        <div className="h-8" />
-      </div>
+      {/* Distinct Content Section with separate background below banner */}
+      <section className="w-full bg-[#111116] border-t border-white/[0.07]">
+        <div className="w-full px-3 sm:px-5 md:px-6 lg:px-8 pt-4 sm:pt-5 pb-14 space-y-5 sm:space-y-6">
+          <ContentRow title="Popular Series" movies={movies} />
+          <ContentRow title="Trending Now" movies={[...movies].reverse()} />
+          <ContentRow
+            title="New Releases"
+            movies={movies.map((m) => ({ ...m, id: m.id + 100 }))}
+          />
+          <ContentRow
+            title="Recommended For You"
+            movies={movies.map((m) => ({ ...m, id: m.id + 200 }))}
+          />
+        </div>
+      </section>
     </main>
   )
 }
+
+

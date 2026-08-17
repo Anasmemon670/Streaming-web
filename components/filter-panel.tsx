@@ -16,13 +16,19 @@ interface FilterPanelProps {
 
 export function FilterPanel({ groups, values, onChange }: FilterPanelProps) {
   return (
-    <div className="bg-card border border-border rounded-xl p-4 md:p-5 space-y-4">
+    <div className="relative bg-black/35 backdrop-blur-md border border-white/[0.08] rounded-2xl p-4 sm:p-5 md:p-6 shadow-xl space-y-4 overflow-hidden">
+      {/* Left Frame Glowing Red Line Shade matching screenshot */}
+      <div className="absolute left-0 top-3 bottom-3 w-[3px] bg-gradient-to-b from-[#E50914] via-[#E50914]/80 to-transparent rounded-r-full shadow-[0_0_12px_rgba(229,9,20,0.6)]" />
+
       {groups.map((group) => (
-        <div key={group.key} className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div key={group.key} className="flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-4 pl-1 sm:pl-2">
+          {/* Group Label */}
+          <span className="text-[11px] sm:text-xs font-bold text-gray-400 w-20 sm:w-24 shrink-0 tracking-wider uppercase pt-1 select-none">
             {group.label}
-          </p>
-          <div className="flex flex-wrap gap-2">
+          </span>
+
+          {/* Group Options */}
+          <div className="flex flex-wrap items-center gap-x-1.5 sm:gap-x-2.5 gap-y-1.5 flex-1">
             {group.options.map((option) => {
               const current =
                 values[group.key] ??
@@ -35,10 +41,10 @@ export function FilterPanel({ groups, values, onChange }: FilterPanelProps) {
                   type="button"
                   onClick={() => onChange(group.key, option)}
                   className={cn(
-                    'px-3 py-1.5 rounded-full text-xs md:text-sm font-medium transition-colors border',
+                    'text-xs font-medium transition-all select-none rounded-full',
                     isActive
-                      ? 'bg-accent text-white border-accent'
-                      : 'bg-secondary text-muted-foreground border-border hover:text-foreground hover:border-accent/50',
+                      ? 'px-3 py-0.5 bg-[#E50914] text-white border border-red-700/80 font-bold shadow-[0_0_8px_rgba(229,9,20,0.5)]'
+                      : 'px-2 py-0.5 text-gray-300 hover:text-white hover:bg-white/[0.06]',
                   )}
                 >
                   {option}
@@ -51,3 +57,4 @@ export function FilterPanel({ groups, values, onChange }: FilterPanelProps) {
     </div>
   )
 }
+
