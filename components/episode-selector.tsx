@@ -1,83 +1,110 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-const seasons = [
+const SEASONS_DATA = [
   {
-    season: 1,
+    season: 'S01',
     episodes: Array.from({ length: 16 }, (_, i) => i + 1),
   },
   {
-    season: 2,
-    episodes: Array.from({ length: 14 }, (_, i) => i + 1),
+    season: 'S02',
+    episodes: Array.from({ length: 16 }, (_, i) => i + 1),
   },
   {
-    season: 3,
-    episodes: Array.from({ length: 12 }, (_, i) => i + 1),
+    season: 'S03',
+    episodes: Array.from({ length: 16 }, (_, i) => i + 1),
   },
 ]
 
-export function EpisodeSelector() {
-  const [selectedSeason, setSelectedSeason] = useState(1)
-  const [selectedEpisode, setSelectedEpisode] = useState(1)
-  const [seasonOpen, setSeasonOpen] = useState(false)
+interface EpisodeSelectorProps {
+  onSelectEpisode?: (season: string, episode: number) => void
+}
 
-  const episodes = seasons.find((s) => s.season === selectedSeason)?.episodes || []
+export function EpisodeSelector({ onSelectEpisode }: EpisodeSelectorProps) {
+  const [activeSeason, setActiveSeason] = useState('S03')
+  const [activeEpisode, setActiveEpisode] = useState(1)
+
+  const currentEpisodes =
+    SEASONS_DATA.find((s) => s.season === activeSeason)?.episodes || []
+
+  const handleEpisodeClick = (ep: number) => {
+    setActiveEpisode(ep)
+    if (onSelectEpisode) {
+      onSelectEpisode(activeSeason, ep)
+    }
+  }
 
   return (
-    <div className="space-y-2.5">
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setSeasonOpen(!seasonOpen)}
-          className="w-full flex items-center justify-between bg-secondary border border-border rounded-md px-2.5 py-1.5 text-sm text-foreground hover:border-accent transition-colors"
-        >
-          <span className="font-medium">Season {selectedSeason}</span>
-          <ChevronDown
-            size={14}
-            className={`transition-transform ${seasonOpen ? 'rotate-180' : ''}`}
-          />
-        </button>
-
-        {seasonOpen && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-md shadow-lg z-10 overflow-hidden">
-            {seasons.map((s) => (
-              <button
-                key={s.season}
-                type="button"
-                onClick={() => {
-                  setSelectedSeason(s.season)
-                  setSelectedEpisode(1)
-                  setSeasonOpen(false)
-                }}
-                className="w-full text-left px-2.5 py-1.5 text-sm hover:bg-secondary hover:text-accent transition-colors border-b border-border last:border-b-0"
-              >
-                Season {s.season}
-              </button>
-            ))}
-          </div>
-        )}
+    <div className="bg-[#0c0c12] border border-white/[0.08] rounded-xl p-3 sm:p-3.5 space-y-3 select-none shadow-xl">
+      {/* Header */}
+      <div>
+        <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
+          Resources
+        </h3>
+        <p className="text-[11px] text-[#7a7a85] truncate mt-0.5">
+          Source: f2movies.to <span className="text-white/20">|</span> By Manisha patel
+        </p>
       </div>
 
-      <div className="space-y-1.5">
-        <h3 className="text-xs font-semibold text-muted-foreground">Episodes</h3>
-        <div className="grid grid-cols-4 gap-1">
-          {episodes.map((ep) => (
+      {/* Season Tabs Row (S01, S02, S03) */}
+      <div className="flex items-center gap-2">
+        {SEASONS_DATA.map((s) => {
+          const isSelected = activeSeason === s.season
+          return (
+            <button
+              key={s.season}
+              type="button"
+              onClick={() => {
+                setActiveSeason(s.season)
+                setActiveEpisode(1)
+              }}
+              className={cn(
+                'flex-1 py-1 px-2 rounded-md text-xs font-bold transition-all',
+                isSelected
+                  ? 'bg-[#15341c] text-[#4ade80] border border-[#22c55e]/60 shadow-[0_0_8px_rgba(34,197,94,0.25)]'
+                  : 'bg-[#14141b] text-gray-400 border border-white/[0.06] hover:text-white hover:border-white/20',
+              )}
+            >
+              {s.season}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* 4-Column Episode Numbers Grid (01 to 16) matching Image 1 */}
+      <div className="grid grid-cols-4 gap-1.5 pt-0.5">
+        {currentEpisodes.map((ep) => {
+          const isCurrent = activeEpisode === ep
+          const epString = ep.toString().padStart(2, '0')
+
+          return (
             <button
               key={ep}
               type="button"
-              onClick={() => setSelectedEpisode(ep)}
-              className={`py-1 rounded text-[11px] font-semibold transition-colors ${
-                selectedEpisode === ep
-                  ? 'bg-accent text-white'
-                  : 'bg-secondary border border-border text-foreground hover:border-accent hover:text-accent'
-              }`}
+              onClick={() => handleEpisodeClick(ep)}
+              className={cn(
+                'h-9 rounded-md text-xs font-bold transition-all flex items-center justify-center relative',
+                isCurrent
+                  ? 'bg-[#15341c] text-[#4ade80] border border-[#22c55e]/60 shadow-[0_0_10px_rgba(34,197,94,0.3)]'
+                  : 'bg-[#14141b] text-gray-300 border border-white/[0.06] hover:bg-[#1a1a24] hover:text-white hover:border-white/20',
+              )}
             >
-              E{ep.toString().padStart(2, '0')}
+              {isCurrent ? (
+                <div className="flex items-center gap-1">
+                  <span className="inline-flex gap-[2px] items-end h-3">
+                    <span className="w-[2px] h-2 bg-[#4ade80] animate-pulse" />
+                    <span className="w-[2px] h-3 bg-[#4ade80] animate-pulse" />
+                    <span className="w-[2px] h-1.5 bg-[#4ade80] animate-pulse" />
+                  </span>
+                </div>
+              ) : (
+                <span>{epString}</span>
+              )}
             </button>
-          ))}
-        </div>
+          )
+        })}
       </div>
     </div>
   )

@@ -9,12 +9,16 @@ import { NAV_MAIN_LINKS, NAV_MORE_LINKS } from '@/lib/mock-data'
 import { AuthModal } from '@/components/auth-modal'
 import { useAuth } from '@/contexts/auth-context'
 import { MoviBoxLogo } from '@/components/movibox-logo'
+import { HeaderSearch } from '@/components/header-search'
 
 const navLinks = NAV_MAIN_LINKS
 const moreLinks = NAV_MORE_LINKS
 
 function isLinkActive(pathname: string, href: string): boolean {
   if (href === '/') return pathname === '/'
+  if (pathname.startsWith('/watch') || pathname.startsWith('/movie')) {
+    if (href === '/movies') return true
+  }
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
@@ -60,7 +64,9 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20)
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
@@ -70,7 +76,9 @@ export function Navbar() {
     pathname === '/tv' ||
     pathname === '/movies' ||
     pathname === '/animation' ||
-    pathname.startsWith('/movie')
+    pathname.startsWith('/movie') ||
+    pathname.startsWith('/watch') ||
+    pathname.startsWith('/search')
 
   return (
     <>
@@ -79,12 +87,14 @@ export function Navbar() {
           'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
           scrolled
             ? isCategoryPage
-              ? 'bg-[#180407]/85 backdrop-blur-md border-b border-red-900/30 shadow-lg'
+              ? 'bg-[#1f0307]/90 backdrop-blur-md border-b border-red-900/40 shadow-[0_4px_24px_rgba(220,15,35,0.35)]'
               : 'bg-[#0a0a0f]/90 backdrop-blur-md border-b border-white/5 shadow-lg'
-            : 'bg-transparent border-b border-transparent',
+            : isCategoryPage
+              ? 'bg-[#140205]/40 backdrop-blur-sm border-b border-transparent'
+              : 'bg-transparent border-b border-transparent',
         )}
       >
-        <nav className="w-full px-4 sm:px-6 md:px-8 lg:px-10 py-2.5 sm:py-3 flex items-center justify-between gap-3 md:gap-6">
+        <nav className="w-full px-3 sm:px-5 md:px-7 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-3 md:gap-6">
           {/* Logo with custom vector icon and white text */}
           <MoviBoxLogo />
 
@@ -154,32 +164,25 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Right Cluster: Search Bar + Login Button */}
-          <div className="flex items-center gap-2.5 sm:gap-3.5 md:gap-4 shrink-0 min-w-0">
-            {/* Search Input with transparent backdrop allowing ambient shade to shine through */}
-            <div className="hidden sm:flex items-center bg-black/30 backdrop-blur-sm border border-white/10 rounded-full px-3.5 sm:px-4 py-1.5 sm:py-2 w-[180px] sm:w-[220px] md:w-[270px] lg:w-[320px] transition-all focus-within:border-white/25 focus-within:bg-black/45">
-              <Search size={16} className="text-gray-400 shrink-0" />
-              <input
-                type="text"
-                placeholder="Search movies/ TV Shows"
-                className="bg-transparent ml-2 w-full min-w-0 text-sm text-white placeholder-gray-400/80 outline-none"
-              />
-            </div>
+          {/* Right Cluster: Search Bar + Login / User Profile */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0 min-w-0">
+            {/* Header Search with 455px Dropdown */}
+            <HeaderSearch />
 
-            {/* User Profile or Login Red Pill Button */}
+            {/* User Profile or Login Button */}
             {user ? (
               <div className="relative shrink-0" ref={userMenuRef}>
                 <button
                   type="button"
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full bg-[#1e1e24] border border-white/10 hover:bg-[#25252c] transition-colors"
+                  className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-[#1e1e24] border border-white/10 hover:bg-[#25252c] transition-colors"
                 >
                   <img
                     src={avatarUrl!}
                     alt="User avatar"
-                    className="w-7 h-7 sm:w-7 sm:h-7 rounded-full object-cover"
+                    className="w-6 h-6 rounded-full object-cover"
                   />
-                  <span className="hidden md:block text-xs sm:text-sm font-medium text-white max-w-[120px] truncate">
+                  <span className="hidden md:block text-xs font-medium text-white max-w-[100px] truncate">
                     {extractUsernameFromEmail(user.email)}
                   </span>
                   <ChevronDown size={14} className="text-gray-400" />
@@ -205,10 +208,9 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => setIsAuthModalOpen(true)}
-                className="shrink-0 whitespace-nowrap px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold text-white bg-[#E50914] hover:bg-[#ff0f1f] shadow-[0_0_16px_rgba(229,9,20,0.45)] transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+                className="shrink-0 whitespace-nowrap px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold text-white bg-white/10 hover:bg-white/20 border border-white/15 transition-all"
               >
-                <span className="sm:hidden">Login</span>
-                <span className="hidden sm:inline">Login / Sign Up</span>
+                <span>Login</span>
               </button>
             )}
 
